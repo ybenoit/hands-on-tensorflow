@@ -56,6 +56,13 @@ class GraphTest(tf.test.TestCase):
                 tf.initialize_all_variables().run()
                 self.assertEqual(sess.run(cross_entropy), -0.25)
 
+    def test_add_train_step(self):
+        with tf.Graph().as_default():
+            loss = tf.Variable([1.0], dtype=tf.float32)
+
+            self.assertIsNotNone(graph.add_train_step(loss, 0.1))
+
+    # TODO: test_run_train_step
 
 if __name__ == '__main__':
     tf.test.main()
