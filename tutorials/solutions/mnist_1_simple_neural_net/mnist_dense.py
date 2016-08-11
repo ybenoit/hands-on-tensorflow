@@ -5,10 +5,11 @@ Reports summaries in TensorBoard
 """
 
 import os
+import shutil
 
 import tensorflow as tf
 
-from tutorials.solutions.mnist_dense import evaluation, input, graph
+from tutorials.solutions.mnist_1_simple_neural_net import evaluation, input, graph
 
 """
 Global variables
@@ -25,7 +26,7 @@ TensorFlow flags
 """
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('max_steps', 100, 'Number of steps to run trainer.')
+flags.DEFINE_integer('max_steps', 2000, 'Number of steps to run trainer.')
 flags.DEFINE_integer('batch_size', 100, 'Train batch size.')
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
 flags.DEFINE_string('data_dir',  os.path.join(os.path.dirname(__file__), "../../data/MNIST_data/"), 'Data Directory')
@@ -36,6 +37,10 @@ def main():
 
     # Create an InteractiveSession
     sess = tf.InteractiveSession()
+
+    # Remove tensorboard previous directory
+    if os.path.exists(FLAGS.summaries_dir):
+        shutil.rmtree(FLAGS.summaries_dir)
 
     """
     Step 1 - Input data management
@@ -56,13 +61,13 @@ def main():
     """
 
     # Inference
-    softmax = graph.inference(x=x, num_pixels=IMAGE_PIXELS, num_classes=NUM_CLASSES)
+    softmax = graph.create_inference_step(x=x, num_pixels=IMAGE_PIXELS, num_classes=NUM_CLASSES)
 
     # Loss
-    cross_entropy = graph.loss(softmax, y_)
+    cross_entropy = graph.add_loss_step(softmax, y_)
 
     # Train step
-    train_step = graph.train(cross_entropy, FLAGS.learning_rate)
+    train_step = graph.add_train_step(cross_entropy, FLAGS.learning_rate)
 
     """
     Step 3 - Build the evaluation step

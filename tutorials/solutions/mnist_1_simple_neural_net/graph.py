@@ -19,7 +19,7 @@ import tensorflow as tf
 TOWER_NAME = 'tower'
 
 
-def inference(x, num_pixels, num_classes):
+def create_inference_step(x, num_pixels, num_classes):
     """
     Build the graph as far as is required for running the network forward to make predictions.
 
@@ -41,7 +41,7 @@ def inference(x, num_pixels, num_classes):
     return softmax
 
 
-def loss(logits, labels):
+def add_loss_step(logits, labels):
     """
     Adds to the inference graph the ops required to generate loss (cross-entropy).
 
@@ -61,7 +61,7 @@ def loss(logits, labels):
     return cross_entropy
 
 
-def train(loss, learning_rate):
+def add_train_step(loss, learning_rate):
     """
     * Sets up the training Ops.
     * Creates a summarizer to track the loss over time in TensorBoard.

@@ -6,7 +6,7 @@
 import tensorflow as tf
 import numpy as np
 
-from tutorials.solutions.mnist_dense import graph
+from tutorials.solutions.mnist_1_simple_neural_net import graph
 
 
 class GraphTest(tf.test.TestCase):
@@ -18,7 +18,7 @@ class GraphTest(tf.test.TestCase):
         with tf.Graph().as_default():
             x = tf.placeholder(tf.float32, [2, 2], name='x_input')
 
-            self.assertIsNotNone(graph.inference(x, num_pixels=2, num_classes=2))
+            self.assertIsNotNone(graph.create_inference_step(x, num_pixels=2, num_classes=2))
 
     def test_run_inference(self):
         with tf.Graph().as_default():
@@ -27,7 +27,7 @@ class GraphTest(tf.test.TestCase):
                 x = tf.Variable([[1.0, 1.0], [1.0, 1.0]], dtype=tf.float32)
 
                 # Accuracy
-                softmax = graph.inference(x, num_pixels=2, num_classes=2)
+                softmax = graph.create_inference_step(x, num_pixels=2, num_classes=2)
 
                 # Evaluate results
                 tf.initialize_all_variables().run()
@@ -38,7 +38,7 @@ class GraphTest(tf.test.TestCase):
             logits = tf.placeholder(tf.float32, [2, 2], name='logits')
             labels = tf.placeholder(tf.float32, [2, 2], name='labels')
 
-            self.assertIsNotNone(graph.loss(logits, labels))
+            self.assertIsNotNone(graph.add_loss_step(logits, labels))
 
     def test_run_loss(self):
         with tf.Graph().as_default():
@@ -48,7 +48,7 @@ class GraphTest(tf.test.TestCase):
                 labels = tf.Variable([[1.0, 0.0], [1.0, 0.0]], dtype=tf.float32)
 
                 # Cross Entropy
-                cross_entropy = graph.loss(logits, labels)
+                cross_entropy = graph.add_loss_step(logits, labels)
 
                 # Evaluate results
                 tf.initialize_all_variables().run()
