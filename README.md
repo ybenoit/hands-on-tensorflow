@@ -32,6 +32,9 @@ git clone https://github.com/ybenoit/hands-on-tensorflow.git
 cd hands-on-tensorflow
 ```
 
+### Configure your IDE
+TODO
+
 ## Start Working
 The project is organized as follow:
 * The tutorials/exercices module is your working module

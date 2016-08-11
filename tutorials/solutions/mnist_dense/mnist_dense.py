@@ -25,7 +25,7 @@ TensorFlow flags
 """
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('max_steps', 1000, 'Number of steps to run trainer.')
+flags.DEFINE_integer('max_steps', 100, 'Number of steps to run trainer.')
 flags.DEFINE_integer('batch_size', 100, 'Train batch size.')
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
 flags.DEFINE_string('data_dir',  os.path.join(os.path.dirname(__file__), "../../data/MNIST_data/"), 'Data Directory')
@@ -75,7 +75,7 @@ def main():
     Step 4 - Merge all summaries for TensorBoard generation
     """
 
-    # Merge all the summaries and write them out to /tmp/mnist_logs (by default)
+    # Merge all the summaries and write them out to /tmp/mnist_dense_logs (by default)
     merged = tf.merge_all_summaries()
     train_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/train', sess.graph)
     validation_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/validation')
