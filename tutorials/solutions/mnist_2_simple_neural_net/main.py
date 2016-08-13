@@ -9,7 +9,7 @@ import shutil
 
 import tensorflow as tf
 
-from tutorials.solutions.mnist_2_deep_neural_net import evaluation, input, graph
+from tutorials.solutions.mnist_2_simple_neural_net import evaluation, input, graph
 
 """
 Global variables
@@ -26,7 +26,7 @@ TensorFlow flags
 """
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('max_steps', 1000, 'Number of steps to run trainer.')
+flags.DEFINE_integer('max_steps', 2000, 'Number of steps to run trainer.')
 flags.DEFINE_integer('batch_size', 100, 'Train batch size.')
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
 flags.DEFINE_string('data_dir',  os.path.join(os.path.dirname(__file__), "../../data/MNIST_data/"), 'Data Directory')
@@ -61,8 +61,7 @@ def main():
     """
 
     # Inference
-    softmax = graph.create_inference_step(x=x, num_pixels=IMAGE_PIXELS, num_dense1=200, num_dense2=100, num_dense3=50,
-                                          num_classes=NUM_CLASSES)
+    softmax = graph.create_inference_step(x=x, num_pixels=IMAGE_PIXELS, num_classes=NUM_CLASSES)
 
     # Loss
     cross_entropy = graph.add_loss_step(softmax, y_)
