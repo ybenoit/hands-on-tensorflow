@@ -5,7 +5,7 @@
 
 import tensorflow as tf
 
-from tutorials.solutions.mnist_1_softmax import evaluation
+from tutorials.solutions.mnist_1_simple_neural_net import evaluation
 
 
 class EvaluationTest(tf.test.TestCase):

@@ -9,7 +9,7 @@ import shutil
 
 import tensorflow as tf
 
-from tutorials.solutions.mnist_3_deep_neural_net import evaluation, input, graph
+from tutorials.solutions.mnist_2_deep_neural_net import evaluation, input, graph
 
 """
 Global variables
