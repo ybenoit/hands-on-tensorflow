@@ -6,7 +6,7 @@
 import tensorflow as tf
 import numpy as np
 
-from tutorials.solutions.mnist_2_simple_neural_net import graph
+from tutorials.solutions.mnist_1_softmax import graph
 
 
 class GraphTest(tf.test.TestCase):
