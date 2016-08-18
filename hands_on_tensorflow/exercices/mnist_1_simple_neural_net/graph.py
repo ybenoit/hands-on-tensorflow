@@ -78,9 +78,6 @@ def add_train_step(loss, learning_rate):
         # Optimizer
         optimizer = "YOUR CODE HERE"
 
-        # Create a variable to track the global step.
-        global_step = tf.Variable(0, name='global_step', trainable=False)
-
         # Use the optimizer to apply the gradients that minimize the loss (and also increment the global step counter)
         # as a single training step.
         train_op = "YOUR CODE HERE"
