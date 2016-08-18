@@ -32,10 +32,10 @@ def create_inference_step(x, num_pixels, num_classes):
     with tf.name_scope("softmax"):
 
         # Model parameters
-        W = tf.Variable(tf.zeros([num_pixels, num_classes]))
-        b = tf.Variable(tf.zeros([num_classes]))
+        weights = tf.Variable(tf.zeros([num_pixels, num_classes]))
+        biases = tf.Variable(tf.zeros([num_classes]))
 
-        softmax = tf.nn.softmax(tf.matmul(x, W) + b)
+        softmax = tf.nn.softmax(tf.matmul(x, weights) + biases)
         _activation_summary(softmax)
 
     return softmax
