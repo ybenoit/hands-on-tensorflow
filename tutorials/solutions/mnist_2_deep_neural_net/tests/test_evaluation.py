@@ -1,7 +1,4 @@
-"""Tests the graph freezing tool."""
-#from __future__ import absolute_import
-#from __future__ import division
-#from __future__ import print_function
+"""Evaluation Step Testing"""
 
 import tensorflow as tf
 
@@ -15,23 +12,29 @@ class EvaluationTest(tf.test.TestCase):
 
     def test_add_evaluation_step(self):
         with tf.Graph().as_default():
+            # Given
             final = tf.placeholder(tf.float32, [1], name='final')
             gt = tf.placeholder(tf.float32, [1], name='gt')
 
-            self.assertIsNotNone(evaluation.evaluate(final, gt))
+            # When
+            accuracy = evaluation.evaluate(final, gt)
+
+            # Then
+            self.assertIsNotNone(accuracy)
+            self.assertEqual(type(accuracy).__name__, "Tensor")
 
     def test_run_evaluation(self):
         with tf.Graph().as_default():
             with tf.Session() as sess:
-                # Input variables
+                # Given
                 final = tf.Variable([[0.1, 0.9], [0.1, 0.9]], dtype=tf.float32)
                 gt = tf.Variable([[0.6, 0.4], [0.2, 0.8]], dtype=tf.float32)
 
-                # Accuracy
+                # When
                 accuracy = evaluation.evaluate(final, gt)
-
-                # Evaluate results
                 tf.initialize_all_variables().run()
+
+                # Then
                 self.assertAllClose(sess.run(accuracy), 0.5)
 
 
