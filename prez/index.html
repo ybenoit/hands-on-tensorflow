@@ -1,0 +1,1656 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Introduction à TensorFlow</title>
+
+
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+
+    <link rel="stylesheet" type="text/css" href="css/theme/devoxx.css" id="theme">
+
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/solarized_light.css">
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+        pre.small-code {
+            font-size: 0.36em;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="reveal center">
+    <div class="slides">
+        <section class="front-page" data-background-image="images/tensorflow-lead.jpg">
+        </section>
+        <section>
+            <h2>Agenda</h2>
+            <ol>
+                <li>Introduction aux Réseaux de Neurones</li>
+                <li>Introduction à TensorFlow</li>
+                <li>Opérations courantes</li>
+                <li>TensorBoard</li>
+                <li>Exercices</li>
+            </ol>
+        </section>
+        <section>
+            <h2 class="alone">Introduction aux Réseaux de Neurones</h2>
+            <section data-background-image="images/nn_background.jpg"></section>
+            <section>
+                <h3>Mais qu'est-ce donc ?</h3>
+                <div>
+                    <div style="width:49%;display: inline-block;">
+                        <p>Un réseau de neurones est un algorithme de <b>Machine Learning</b> permettant de classer des données via une forme complexe et non-linéraire.</p>
+                        <p>Initialement inspiré du fonctionnement des neurones du cerveau (<i>mais on en est très loin</i>).</p>
+                        <br \>
+                    </div>
+                    <div style="width:44%;display: inline-block;">
+                        <img height="400px" src="images/nn_44322.png" />
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>Le "Neurone"</h3>
+                <div>
+                    <p>C'est le plus simple des réseaux de neurones.</p> 
+                    <p>Il transforme directement les données d'entrée via des combinaisons linéaires et une <b>fonction d'activation</b>.</p>
+                </div>
+                <div>
+                    <div style="width:74%;display: inline-block;">
+                        <p>Mathématiquement, cela peut s'écrire comme suit:
+                            $$Y(x) = f(x * W) = f(\sum_{i=1}^3 W_i * x_i)$$
+                        </p>
+                        <p>f prend souvent la forme de la fonction sigmoid:
+                            $$f(z) = \frac{1}{1 + exp(-z)}$$
+                        </p>
+                    </div>
+                    <div style="width:24%;display: inline-block;">
+                        <img height="200px" src="images/single_neuron.png" />
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>Réseau de neurones</h3>
+                <p>Un réseau de neurones n'est rien d'autre qu'un <b>assemblement de neurones simples</b> de manière à ce que la sortie d'un neurone peut correspondre à l'une des entrées d'un autre.</p>
+                <div>
+                    <div style="width:64%;display: inline-block;">
+                        <p>Un peu de vocabulaire:
+                            <li>Couche d'entrée: <b>input layer</b></li>
+                            <li>Couche(s) de sortie: <b>output layer(s)</b></li>
+                            <li>Couches intermédiaires: <b>hidden layer</b>
+                        </p>
+                    </div>
+                    <div style="width:24%;display: inline-block;">
+                        <img height="200px" src="images/nn_44322.png" />
+                    </div>
+                </div>
+                <p>Les couches cachées se nomment ainsi car leurs valeurs ne sont pas directement observées dans le jeu de données, mais plutôt apprises.</p>
+            </section>
+            <section>
+                <h3>Le "Hello World": MNIST</h3>
+                <div>
+                    <p>MNIST est un dataset simple de <b>reconnaissance de caractères</b> (chiffres de 0 à 9). On a à notre disposition une image ainsi que son label correspondant.</p>
+                </div>
+                <div class="center">
+                    <img src="images/mnist_example.png"/>
+                </div>
+                <div>
+                    <p><b><i>Objectif</b>: Entraîner un modèle capable de détecter à partir de l'image à quel chiffre il correspond.</i></p>
+                    <p><i>NB: Les données peuvent se trouver sur le <a href = "http://yann.lecun.com/exdb/mnist/">site de Yann LeCun</a>.</i></p>
+                </div>
+            </section>
+            <section>
+                <h3>Structure d'une image</h3>
+                <p>Chaque image a pour dimensions 28x28 pixels, et peut être représentée sous la forme d'une matrice aux mêmes dimensions, chaque élément correspondant à l'intensité d'un des pixels.</p>
+                <div class="center">
+                    <img height="300px" src="images/mnist_matrix.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Softmax Regression</h3>
+                <div>
+                    <div>
+                        <p><b>Objectif</b>: Pour chaque image, fournir la probabilité d'appartenance à chaque classe (0 à 9). Le Softmax Regression est le moyen le plus simple pour arriver à cela. Il se décompose en deux étapes:</p>
+                    </div>
+                    <div class="fragment">
+                        <div style="width:24%;display: inline-block;">
+                            <img height="300px" src="images/softmax_regression.png" />
+                        </div>
+                        <div style="width:74%;display: inline-block;">
+                            <p>
+                                <ol>
+                                    <li>Addition des <b>évidences</b> qu'une image appartienne à une certaine classe: Somme pondérée des intensités des pixels</li>
+                                    <li>Conversion de ces évidences en <b>probabilités</b>: Softmax</li>
+                                </ol>
+                                Les biais sont présents pour représenter les indépendances vis à vis des entrées.
+                            </p>
+                        </div>
+                    </div>
+                </div>  
+            </section>
+            <section>
+                <h3>Softmax Regression</h3>
+                <p>Les poids ont une valeur positive si la forte intensité d'un pixel est une preuve d'appartenance à la classe correspondante, une valeur négative si c'est le contraire.</p>
+                <div class="center">
+                    <img height="300px" src="images/mnist_weights.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Softmax Regression</h3>
+                <div>
+                    <div style="width:24%;display: inline-block;">
+                        <img height="400px" src="images/softmax_regression.png" />
+                    </div>
+                    <div style="width:74%;display: inline-block;">
+                        <p>La première étape se modélise par un produit matriciel: $$evidence_i = \sum_{j=1}^{M} W_{i,j} x_j + b_i$$</p>
+                        <p>
+                            L'étape de softmax se modélise de la manière suivante:
+                            $$softmax_i = \frac{exp(x_i)}{\sum_{j=1}^{N} exp(x_j)}$$
+                            $$y = softmax(evidence)$$
+                        </p>
+                        <br \>
+                    </div>
+                </div>  
+            </section>
+            <section>
+                <h3>Softmax Regression</h3>
+                <p>En réalité, il est commun de ne pas faire le calcul image par image, mais par batch d'images. Le calcul matriciel reste semblable.</p>
+                <div class="center">
+                    <img height="375px" src="images/softmax_batch.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Mesure de la performance du modèle</h3>
+                <p>Une fois les prédictions faites, il convient de vérifier qu'elles soient cohérentes. La <b>cross entropie</b> est une bonne mesure pour les réseaux de neurones (prend en compte à quel point les probabilités sont proches des vraies valeurs)</p>
+                <p>$$cross_{entropy} = - \sum_{i=1}^{M}\tilde{y_i} * log(y_i)$$</p>
+                <div class="center">
+                    <img height="150px" src="images/cross_entropy.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Training du modèle</h3>
+                <p>La phase de training permet de mettre à jour les poids en fonction des erreurs faites. La principale méthode utilisée est la <b>back-propagation</b>.</p>
+                <div>
+                    <div style="width:32%;display: inline-block;">
+                        <img height="300px" src="images/nn_432_before_training.png" />
+                        <p>Before backward step</p>
+                    </div>
+                    <div class="fragment" style="width:32%;display: inline-block;">
+                        <img height="300px" src="images/nn_432_after_training_1.png" />
+                        <p>After backward 1st step</p>
+                    </div>
+                    <div class="fragment" style="width:32%;display: inline-block;">
+                        <img height="300px" src="images/nn_432_after_training_2.png" />
+                        <p>After backward 2nd step</p>
+                    </div>
+                </div> 
+            </section>
+            <section>
+                <h3>Training du modèle</h3>
+                <p>L'algorithme le plus classique pour réaliser cela est la <b>descente de gradient stochastique</b>. La mise à jour des poids pour minimiser l'erreur se fait de la manière suivante:
+                    $$w_{update} = w - \lambda \nabla Q_i(w)$$
+                </p>
+                <p>Le paramètre précédent le gradient s'appelle le <b>learning rate</b>. Sa valeur va impacter énormément la convergence de l'algorithme.
+                <div class="center">
+                    <img height="200px" src="images/sgd.png" />
+                </div>
+            </section>
+        </section>
+        <section>
+            <h2 class="alone">TensorFlow</h2>
+            <section data-background-image="images/tensorflow-google.jpg"></section>
+            <section>
+                <h3>Qu'est ce donc ?</h3>
+                <p>TensorFlow est un framework de programmation open-sourcé par Google en 2016.</p>
+                <p>Aujourd'hui en version 0.10.</p>
+                <p>APIs en Python, C et C++.</p>
+                <p>Principalement utilisé et optimisé pour l'entraînement et l'utilisation de <b>Réseaux de Neurones</b>, et plus particulièrement pour le <b>Deep Learning.</b></p>
+                <p><i>DeepMind a récemment annoncé la migration de tous leurs algorithmes de Torch vers TensorFlow.</i></p>
+            </section>
+            <section>
+                <h3>Comment ça marche ?</h3>
+                <div>
+                    <div class="fragment">
+                        <div style="width:59%;display: inline-block;">
+                            <p>TensorFlow représente les calculs en tant que <b>graphe</b>.</p>
+                            <p>Les noeuds du graphe sont des <b>opérations</b> (Ops).</p>
+                        </div>
+                        <div style="width:39%;display: inline-block;">
+                            <img src="images/tensorboard_graph_simple.png" />
+                        </div>
+                    </div>
+                    <div class="fragment">
+                        <p>Chaque opération prend en entrée zéro ou plusieurs <b>Tensors</b> (un array multi-dimensionnel typé), effectue un calcul, et retourne zéro ou plusieurs <b>Tensors</b>.</p>
+                        <p><i>Exemple: Un mini-batch d'images peut être représenté par un Tensor à 4 dimensions [batch, height, width, channels] </i></p>
+                    </div>
+                </div>  
+            </section>
+            <section>
+                <h3>Comment Tensorflow effectue les calculs ?</h3>
+                <p>Pour pouvoir calculer quelque chose, un graphe doit être lancé dans une <b>Session</b>.</p>
+                <p>Une Session place les opérations du graphe dans des <b>Devices</b> (CPU ou GPU) et met à disposition des méthodes pour les éxecuter.</p>
+                <p>Les méthodes renvoient des Tensors sous la forme d'arrays NumPy (pour l'API Python).</p>
+            </section>
+            <section>
+                <p>
+                    Généralement, le code se structure de la manière suivante:
+                    <li>Une phase de <b>construction</b> où l'on décrit et assemble toutes les opérations du graphe</li>
+                    <li>Une phase d'<b>exécution</b> qui utilise une Session pour exécuter les opérations du graphe</li>
+                </p>
+                <p>Cette séparation permet à TensorFlow d'optimiser l'enchaînement des étapes du graphe avant de les exécuter</p>
+            </section>
+            <section>
+                <h3>Exemple simple: Construction d'un graphe</h3>
+                <pre class="python"><code class="hljs">
+import tensorflow as tf
+
+# Create a Constant op that produces a 1x2 matrix.
+matrix1 = tf.constant([[3., 3.]])
+
+# Create another Constant that produces a 2x1 matrix.
+matrix2 = tf.constant([[2.], [2.]])
+
+# Create a matmul op that performs the matrix multiplication of matrix1 by matrix2.
+product = tf.matmul(matrix1, matrix2)
+                </code></pre>
+            </section>
+            <section>
+                <h3>Exemple simple: Lancement d'un graphe</h3>
+                <pre class="python"><code class="hljs">
+# Launch th default graph.
+sess = tf.Session()
+
+# Call the session 'run()' method to run the matmul op.
+result = sess.run(product)
+print(result)
+
+# You can call multiple operations at the same time
+res_product, res_matrix1 = sess.run([product, matrix1])
+print(res_matrix1)
+
+# Close the session
+sess.close()
+                </code></pre>
+            </section>
+            <section>
+                <h3>Exemple simple: Lancement d'un graphe (2)</h3>
+                <pre class="python"><code class="hljs">
+# The Session closes automatically after a 'with' block.
+with tf.Session() as sess:
+    result = sess.run(product)
+    print(result)
+                </code></pre>
+            </section>
+            <section>
+                <h3>Exemple simple: Lancement d'un graphe (3)</h3>
+                <p>On peut aussi utiliser une <b>InteractiveSession</b> pour un usage interactif (utile dans des notebooks iPython)</p>
+                <pre class="python"><code class="hljs">
+# Interactive Session.
+sess = tf.InteractiveSession()
+
+# Run product
+result = sess.run(product)
+print(result)
+                </code></pre>
+            </section>
+        </section>
+        <section>
+            <h2 class="alone">Opérations courantes</h2>
+            <section data-background-image="images/tensorflow-google.jpg"></section>
+            <section>
+                <h3>Constant</h3>
+                <p>Opération représentant une valeur constante.</p>
+                <pre class="python"><code class="hljs">
+const = tf.constant([[2., 1.]])
+                </code></pre>
+            </section>
+            <section>
+                <h3>Variable</h3>
+                <p>Maintient un état durant l'exécution du graphe.</p>
+                <p>Les Variables doivent être initialisées au lancement du graphe.</p>
+                <pre class="python"><code class="hljs">
+# Variable de comptage
+counter = tf.Variable(0, name="counter")
+
+# Variable d'initialisation de poids d'une régression logistique
+weights = tf.Variable(tf.zeros([image_pixels, num_classes]))
+
+# Initialisation de toutes les variables.
+tf.initialize_all_variables().run()
+                </code></pre>
+                <p><i><b>Exemple d'utilisation</b>: Instanciation et mise à jour des poids d'un réseau de neurones</i></p>
+            </section>
+            <section>
+                <h3>Placeholder</h3>
+                <p>Tensor sans valeur spécifique. Sa valeur va être fixée lors du run d'un calcul.
+                <pre class="python"><code class="hljs">
+# Placeholders
+input1 = tf.placeholder(tf.float32)
+input2 = tf.placeholder(tf.float32)
+
+# Multiplication
+output = tf.mul(input1, input2)
+
+# Assignation des Tensors via un feed_dict dans la méthode run
+with tf.Session()as sess:
+    print(sess.run(output, feed_dict={input1: [7.], input2: [2.]}))
+                </code></pre>
+                <p><i><b>Exemple d'utilisation</b>: Fournir des nouveaux batchs d'images à chaque itération lors de l'entraînement d'un réseau de neurones</i></p>
+            </section>
+        </section>
+        <section>
+            <h2>TensorBoard</h2>
+            <section data-background-image="images/tensorboard_graph.gif"></section>
+            <section>
+                <p>TensorBoard est un <b>outil de visualisation</b> proposé dans TensorFlow, permettant de suivre notamment l'évolution d'une phase d'entraînement d'un Réseau de Neurones.</p>
+                <p>On spécifie dans le code quelles sont les variables que l'on souhaite suivre. Les statistiques sont écrites dans un répertoire spécifié.</p>
+                <p>Pour lancer un TensorBoard, il suffit de taper la commande suivante dans le dossier "tensorflow/bin":</p>
+                <pre><code class="hljs" data-trim>                      
+    $ tensorboard --logdir=/tmp/my_network_name_logs
+                </code></pre>
+            </section>
+            <section>
+                <h3>Suivi des évênements</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/tensorboard_events.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Affichage de données source</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/tensorboard_images.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Affichage du graphe généré</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/tensorboard_graph.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Histogrammes de suivi</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/tensorboard_histograms.png" />
+                </div>
+            </section>
+        </section>
+        <section>
+            <h2 class="alone">Time to code !</h2>
+            <section data-background-image="images/tensorflow-google.jpg"></section>
+            <section>
+                <h3>Organisation des exercices</h3>
+                <p>Les exercices se situent dans le dossier <b>hands_on_tensorflow/exercices</b>.</p>
+                <p>Les solutions se situent dans le dossier <b>hands_on_tensorflow/solutions</b>.</p>
+                <p>Pour chaque exercice, vous trouverez un module python pour chaque grande phase de construction du réseau de neurones, ainsi qu'un module <b>main.py</b> permettant de tout enchaîner et de lancer l'apprentissage.</p>
+                <p>Des tests sont executables dans chaque exercice pour vérifier vos implémentations.</p>
+            </section>
+        </section>
+        <section>
+            <h2 class="alone">Exercice 1: Softmax Regression</h2>
+            <section data-background-image="images/tensorflow-google.jpg"></section>
+            <section>
+                <h3>But de l'exercice</h3>
+                <div>
+                    <div style="width:69%;display: inline-block;">
+                        L'objectif de ce premier exercice est d'implémenter le plus simple des réseaux de neurones: Le <b>Softmax Regression</b>
+                        <p>
+                            <li>Aucune couche cachée</li>
+                            <li>Lien direct entre input et output</li>
+                            <li>Softmax</li>
+                        </p>
+                            <br />
+                            <br />
+                    </div>
+                    <div style="width:29%;display: inline-block;">
+                        <img height="400px" src="images/softmax_regression.png" />
+                    </div>
+                </div>
+                <p>Vous travaillerez dans le dossier <b>exercices/mnist_1_softmax_regression</b></p>
+            </section>
+            <section>
+                <h3>De quoi avons-nous besoin ?</h3>
+                <div>
+                    <div style="width:74%;display: inline-block;">
+                        Voici les grandes étapes que nous aurons à réaliser:
+                        <ol>
+                            <li><b>Définir les inputs</b>: Représenter les batchs d'images sur lesquels s'entraîner, ainsi que les labels associés</li>
+                            <li>
+                                <b>Construction du graphe</b>
+                                <ol>
+                                    <li>Inférence: Toutes les étapes nécessaires pour effectuer les prédictions à partir des inputs (forward)</li>
+                                    <li>Calcul de la fonction de coût</li>
+                                    <li>Training (mise à jour par backward propagation) du modèle</li>
+                                </ol>
+                            </li>
+                            <li><b>Evaluation du modèle</b> (pour accuracy sur validation et test sets)</li>
+                        </ol>
+                    </div>
+                    <div style="width:24%;display: inline-block;">
+                        <img height="400px" src="images/softmax_regression.png" />
+                        <br />
+                        <br />
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>Step 1: Définition des inputs</h3>
+                <p>
+                    Nous allons ici <b>spécifier les entrées nécessaires au réseau de neurones</b>. Etant donné que ces entrées sont amenées à changer en fonction des images que l'on va fournir, le type de données adapté est un <b>placeholder</b>.
+                    <li>X: placeholder permettant de représenter un batch d'images (pour cet exercices, les images sont éclatées en une seule liste de pixels)</li>
+                    <li>y_: placeholder permettant de représenter le label associé à chaque image dans X</li>
+                </p>
+                <p>Dans le module <b>input.py</b>, complétez la fonction <b>input_placeholders</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_input.py</b></i></p>
+                <p>Lien vers doc <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/io_ops.html#placeholder">placeholder</a>.</p>
+            </section>
+            <section>
+                <h3>Step 1: solution</h3>
+                <pre class="python"><code class="hljs">
+def input_placeholders(image_pixels, num_classes):
+    """
+    Initialises all input placeholders needed in the graph
+
+    :param image_pixels: Total number of pixels in the image
+    :param num_classes: Number of classes to predict
+    :return: Input and labels placeholders
+    """
+
+    with tf.name_scope('input'):
+
+        # Images input
+        x = tf.placeholder(tf.float32, [None, image_pixels], name="x_input")
+
+        # Labels input
+        y_ = tf.placeholder(tf.float32, [None, num_classes])
+
+    return x, y_
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.1: Construction du graphe - Inférence</h3>
+                L'inférence correspond aux étapes nécessaires pour passer d'un input à une prédiction en traversant le réseau. Voici les étapes dans notre cas:
+                <div>
+                    <div style="width:84%;display: inline-block;">
+                        <p>
+                            <ol>
+                                <li>Définition des variables de poids (w) et biais (b) du réseau</li>
+                                <li>Opérations matricielles: $$xW + b$$</li>
+                                <li>Softmax sur le résultat</li>
+                            </ol>
+                        </p>
+                    </div>
+                    <div style="width:14%;display: inline-block;">
+                        <img height="175px" src="images/softmax_regression.png" />
+                    </div>
+                </div>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>create_inference_step</b>.</p>
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_inference.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/state_ops.html#Variable">Variable</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/constant_op.html#zeros">zeros</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#matmul">matmul</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/nn.html#softmax">softmax</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.1: Solution</h3>
+                <pre class="python"><code class="hljs">
+def create_inference_step(x, num_pixels, num_classes):
+    """
+    Build the graph as far as is required for running the network forward to make predictions.
+
+    :param x: Images placeholder, from inputs().
+    :param num_pixels: Number of pixels in the original image
+    :param num_classes: Number of classes to predict
+    :return: softmax: Output tensor with the computed logits.
+    """
+
+    with tf.name_scope("softmax"):
+
+        # Model parameters
+        W = tf.Variable(tf.zeros([num_pixels, num_classes]))
+        b = tf.Variable(tf.zeros([num_classes]))
+
+        softmax = tf.nn.softmax(tf.matmul(x, W) + b)
+        _activation_summary(softmax)
+
+    return softmax
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.2: Construction du graphe - Loss</h3>
+                <p>Afin de pouvoir entraîner le modèle, il faut avoir une notion des erreurs faites lors de la phase d'inférence. C'est pourquoi il faut ajouter une étape avec une fonction de coût (cross-entropy).</p> 
+                <div>
+                    <div style="width:54%;display: inline-block;">
+                        <p>Elle se décompose de la manière suivante:</p>
+                    </div>
+                    <div style="width:44%;display: inline-block;">
+                        $$diff = labels * log(softmax)$$
+                        $$loss = -\frac{1}{N} \sum_{i=1}^{N} diff_i$$
+                    </div>
+                </div>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>add_loss_step</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_loss.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#log">log</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#reduce_mean">reduce_mean</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.2: Solution</h3>
+                <pre class="python"><code class="hljs">
+def add_loss_step(logits, labels):
+    """
+    Adds to the inference graph the ops required to generate loss (cross-entropy).
+
+    :param logits: Logits tensor, float - [batch_size, NUM_CLASSES].
+    :param labels: Labels tensor, int32 - [batch_size].
+    :return: loss: Loss tensor of type float.
+    """
+
+    with tf.name_scope('cross_entropy'):
+        diff = labels * tf.log(logits)
+
+        with tf.name_scope('total'):
+            cross_entropy = -tf.reduce_mean(diff)
+
+        tf.scalar_summary('cross entropy', cross_entropy)
+
+    return cross_entropy
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.3: Construction du graphe - Training</h3>
+                <p>La phase de training correspond à la mise à jour des différents poids via <b>backward propagation</b> en fonction des erreurs faites dans le forward précédent (<b>Gradient Descent</b>). Elle se décompose de la manière suivante:
+                    <ol>
+                        <li>Choix d'un optimizer (gradient descent) et d'un learning rate</li>
+                        <li>Minimisation de la loss (cross_entropy) via de ce dernier</li>
+                    </ol>
+                </p>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>add_train_step</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_train.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/train.html#GradientDescentOptimizer">GradientDescentOptimizer</a> et usage de <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/train.html#Optimizer">minimize</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.3: Solution</h3>
+                <pre class="python"><code class="hljs">
+def add_train_step(loss, learning_rate):
+    """
+    Adds to the graph the ops required to minimize the loss.
+    
+    :param loss: Loss tensor, from loss().
+    :param learning_rate: Learning Rate.
+    :return: train_op: The Op for training.
+    """
+
+    with tf.name_scope('train'):
+
+        # Optimizer
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+
+        # Use the optimizer to apply the gradients that minimize the loss (and also increment the global step counter)
+        # as a single training step.
+        train_op = optimizer.minimize(loss)
+
+    return train_op
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 3: Evaluation du modèle</h3>
+                <p>Afin de pouvoir vérifier que l'apprentissage du modèle converge, il est possible d'ajouter une <b>dernière étape d'évaluation</b> de ce dernier, que l'on pourra faire régulièrement sur un <b>validation set</b>, puis à la fin sur le <b>test set</b>.</p> 
+                <div>
+                    <div style="width:54%;display: inline-block;">
+                        <p>Cette dernière étape se décompose de la manière suivante:</p>
+                    </div>
+                    <div style="width:44%;display: inline-block;">
+                        $$correct = 1_{argmax(\tilde{y_i}) = argmax(y_i)}$$
+                        $$accuracy = \frac{1}{N} \sum_{i=1}^{N}correct_i$$
+                    </div>
+                </div>
+                <p>Dans le module <b>evaluation.py</b>, complétez la fonction <b>evaluate</b>.</p>
+                <p><i>NB: Les tests doivent passer dans <b>test_evaluation.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#argmax">argmax</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/control_flow_ops.html#equal">equal</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/array_ops.html#cast">cast</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#reduce_mean">reduce_mean</a>.</p>
+            </section>
+            <section>
+                <h3>Step 3: Solution</h3>
+                <pre class="python"><code class="hljs">
+def evaluate(logits, labels):
+    """
+    Adds an evaluation step to the graph.
+
+    :param logits: Logits tensor, from inference().
+    :param labels: True labels.
+    :return: accuracy: The Op for evaluating accuracy.
+    """
+
+    with tf.name_scope('accuracy'):
+        with tf.name_scope('correct_prediction'):
+            correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(labels, 1))
+
+        with tf.name_scope('accuracy'):
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+        tf.scalar_summary('accuracy', accuracy)
+
+    return accuracy
+                </code></pre>
+            </section>
+            <section>
+                <h3>Entraînement du modèle</h3>
+                <p>Dans le module <b>main.py</b>, complétez la fonction <b>main</b> avec les différentes fonctions que vous avez implémenté.</p>
+                <p>Observez bien chaque étape de la fonction pour comprendre leur objectif, puis lancez le run.</p>
+                <p> Une fois l'entraînement terminé, lancez TensorBoard pour visualiser l'entraînement, et regardez le score atteint sur le test set.</p>
+            </section>
+            <section>
+                <h3>Entraînement du modèle: Solution</h3>
+                <pre class="python"><code class="hljs">
+def main():
+
+    # Create an InteractiveSession
+    sess = tf.InteractiveSession()
+
+    # Remove tensorboard previous directory
+    if os.path.exists(FLAGS.summaries_dir):
+        shutil.rmtree(FLAGS.summaries_dir)
+
+    """
+    Step 1 - Input data management
+    """
+
+    # MNIST data
+    mnist = input.input_reader(FLAGS.data_dir)
+
+    # Input placeholders
+    x, y_ = input.input_placeholders(IMAGE_PIXELS, NUM_CLASSES)
+
+    # Reshape images for visualization
+    x_reshaped = tf.reshape(x, [-1, IMAGE_SIZE, IMAGE_SIZE, 1])
+    tf.image_summary('input', x_reshaped, NUM_CLASSES, name="y_input")
+
+    """
+    Step 2 - Building the graph
+    """
+
+    # Inference
+    softmax = graph.create_inference_step(x=x, num_pixels=IMAGE_PIXELS, num_classes=NUM_CLASSES)
+
+    # Loss
+    cross_entropy = graph.add_loss_step(softmax, y_)
+
+    # Train step
+    train_step = graph.add_train_step(cross_entropy, FLAGS.learning_rate)
+
+    """
+    Step 3 - Build the evaluation step
+    """
+
+    # Model Evaluation
+    accuracy = evaluation.evaluate(softmax, y_)
+
+    """
+    Step 4 - Merge all summaries for TensorBoard generation
+    """
+
+    # Merge all the summaries and write them out to /tmp/mnist_dense_logs (by default)
+    merged = tf.merge_all_summaries()
+    train_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/train', sess.graph)
+    validation_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/validation')
+
+    """
+    Step 5 - Train the model, and write summaries
+    """
+
+    # Initialize all variables
+    tf.initialize_all_variables().run()
+
+    # All other steps, run train_step on training data, & add training summaries
+    for i in range(FLAGS.max_steps):
+
+        # Load next batch of data
+        x_batch, y_batch = mnist.train.next_batch(FLAGS.batch_size)
+
+        # Run summaries and train_step
+        summary, _ = sess.run([merged, train_step], feed_dict={x: x_batch, y_: y_batch})
+
+        # Add summaries to train writer
+        train_writer.add_summary(summary, i)
+
+        # Every 10th step, measure validation-set accuracy, and write validation summaries
+        if i % 10 == 0:
+            # Run summaries and mesure accuracy on validation set
+            summary, acc_valid = sess.run([merged, accuracy],
+                                          feed_dict={x: mnist.validation.images, y_: mnist.validation.labels})
+
+            # Add summaries to validation writer
+            validation_writer.add_summary(summary, i)
+
+            print('Validation Accuracy at step %s: %s' % (i, acc_valid))
+
+    # Measure accuracy on test set
+    acc_test = sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
+    print('Accuracy on test set: %s' % acc_test)
+                </code></pre>
+            </section>
+            <section>
+                <h3>Accuracy</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/sol_ex1_accuracy.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Cross-Entropy</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/sol_ex1_cross_entropy.png" />
+                </div>
+            </section>
+        </section>
+        <section>
+            <h2 class="alone">Exercice 2: Simple Neural Network</h2>
+            <section data-background-image="images/tensorflow-google.jpg"></section>
+            <section>
+                <h3>But de l'exercice</h3>
+                <div>
+                    <div style="width:69%;display: inline-block;">
+                        L'objectif de ce deuxième exercice est d'implémenter un réseau de neurones simple.
+                        <p>
+                            <li>Une couche d'entrée</li>
+                            <li>1 couches cachée</li>
+                            <li>Une couche de sortie</li>
+                            <li>Softmax</li>
+                        </p>
+                            <br />
+                            <br />
+                    </div>
+                    <div style="width:29%;display: inline-block;">
+                        <img height="400px" src="images/nn_432_after_training_2.png" />
+                    </div>
+                </div>
+                <p>Vous travaillerez dans le dossier <b>exercices/mnist_2_simple_neural_net</b></p>
+            </section>
+            <section>
+                <h3>De quoi avons-nous besoin ?</h3>
+                <div>
+                    <div style="width:74%;display: inline-block;">
+                        Les  étapes à réaliser sont toujours les mêmes:
+                        <ol>
+                            <li><b>Définir les inputs</b>: Représenter les batchs d'images sur lesquels s'entraîner, ainsi que les labels associés</li>
+                            <li>
+                                <b>Construction du graphe</b>
+                                <ol>
+                                    <li>Inférence: Toutes les étapes nécessaires pour effectuer les prédictions à partir des inputs (forward)</li>
+                                    <li>Calcul de la fonction de coût</li>
+                                    <li>Training (mise à jour par backward propagation) du modèle</li>
+                                </ol>
+                            </li>
+                            <li><b>Evaluation du modèle</b> (pour accuracy sur validation et test sets)</li>
+                        </ol>
+                    </div>
+                    <div style="width:24%;display: inline-block;">
+                        <img height="400px" src="images/nn_432_after_training_2.png" />
+                        <br />
+                        <br />
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>Disclaimer</h3>
+                <p>La quasi totalité des étapes énoncées précédemment ont <b>déjà été implémentées dans l'exercice précédent</b>.</p>
+                <p>Le seul changement se situe au niveau de la fonction d'<b>inférence</b> lors de la construction du graphe (Ajout de la couches cachée), et dans le main (nouveaux paramètres pour la fonction d'inférence).</p>
+                <p><i>Pour le reste, vous pouvez donc sauvagement copier le code réalisé lors de l'étape précédente, tout en vous assurant que vous avez bien compris toutes les étapes !</i></p>
+                <p><i>Les explications de toutes les étapes ainsi que les solutions sont tout de même fournies par la suite, même si le code est le même pour certaines étapes.</i></p>
+            </section>
+            <section>
+                <h3>Step 1: Définition des inputs</h3>
+                <p>
+                    Nous allons ici <b>spécifier les entrées nécessaires au réseau de neurones</b>. Etant donné que ces entrées sont amenées à changer en fonction des images que l'on va fournir, le type de données adapté est un <b>placeholder</b>.
+                    <li>X: placeholder permettant de représenter un batch d'images (pour cet exercices, les images sont éclatées en une seule liste de pixels)</li>
+                    <li>y_: placeholder permettant de représenter le label associé à chaque image dans X</li>
+                </p>
+                <p>Dans le module <b>input.py</b>, complétez la fonction <b>input_placeholders</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_input.py</b></i></p>
+                <p>Lien vers doc <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/io_ops.html#placeholder">placeholder</a>.</p>
+            </section>
+            <section>
+                <h3>Step 1: solution</h3>
+                <pre class="python"><code class="hljs">
+def input_placeholders(image_pixels, num_classes):
+    """
+    Initialises all input placeholders needed in the graph
+
+    :param image_pixels: Total number of pixels in the image
+    :param num_classes: Number of classes to predict
+    :return: Input and labels placeholders
+    """
+
+    with tf.name_scope('input'):
+
+        # Images input
+        x = tf.placeholder(tf.float32, [None, image_pixels], name="x_input")
+
+        # Labels input
+        y_ = tf.placeholder(tf.float32, [None, num_classes])
+
+    return x, y_
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.1: Construction du graphe - Inférence</h3>
+                oici les étapes pour traverser le réseau dans notre cas:
+                <div>
+                    <div style="width:84%;display: inline-block;">
+                        <p>
+                            <ol>
+                                <li>Définition des variables de poids (w) et biais (b) du réseau</li>
+                                <li>Opérations matricielles: $$(x * W_1 + b_1) * W_2 + b_2$$</li>
+                                <li>Softmax sur le résultat</li>
+                            </ol>
+                        </p>
+                    </div>
+                    <div style="width:14%;display: inline-block;">
+                        <img height="175px" src="images/nn_432_after_training_2.png" />
+                    </div>
+                </div>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>create_inference_step</b>.</p>
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_inference.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/state_ops.html#Variable">Variable</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/constant_op.html#truncated_normal">truncated_normal</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/constant_op.html#constant">constant</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/nn.html#relu">relu</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#matmul">matmul</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/nn.html#softmax">softmax</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.1: Construction du graphe - Inférence</h3>
+                <h4>Hints</h4>
+                <div>
+                    <div style="width:74%;display: inline-block;">
+                        <p>
+                            <p><i>Bien réfléchir aux dimensions des Tensors. Exemple:</i></p>
+                            <li>input: [batch_size, 4]</li>
+                            <li>W_1: [4, 3]; b_1: [3]</li>
+                            <li>W_2: [3, 2]; b_2: [2]</li>
+                        </p>
+                    </div>
+                    <div style="width:24%;display: inline-block;">
+                        <img height="175px" src="images/nn_432_after_training_2.png" />
+                    </div>
+                </div>
+                <p><i>Initialiser les poids avec des faibles valeurs random (truncated_normal) et avec une valeur constante faible pour les biais (constant).</i></p>
+                <p><i>Pour la couche cachée, il faut faire passer la sortie (après le matmul) par une fonction sigmoid ou un relu (rectified linear unit)</i>.</p>
+            </section>
+            <section>
+                <h3>Step 2.1: Solution</h3>
+                <pre class="python"><code class="hljs">
+def create_inference_step(x, num_pixels, num_dense, num_classes):
+    """
+    Build the graph as far as is required for running the network forward to make predictions.
+
+    :param x: Images placeholder, from inputs().
+    :param num_pixels: Number of pixels in the original image
+    :param num_dense: Number of neurons in the hidden layer
+    :param num_classes: Number of classes to predict
+    :return: softmax: Output tensor with the computed logits.
+    """
+
+    # Hidden Layer
+    with tf.name_scope("dense"):
+        weights = tf.Variable(tf.truncated_normal(shape=[num_pixels, num_dense], stddev=0.1, name="weights"))
+        biases = tf.Variable(tf.constant(0.1, shape=[num_dense], name="biases"))
+
+        dense = tf.nn.relu(tf.matmul(x, weights) + biases, name="dense1")
+        _activation_summary(dense)
+
+    # Softmax Layer
+    with tf.name_scope("softmax"):
+        weights = tf.Variable(tf.truncated_normal(shape=[num_dense, num_classes], stddev=0.1, name="weights"))
+        biases = tf.Variable(tf.constant(0.1, shape=[num_classes], name="biases"))
+
+        softmax = tf.nn.softmax(tf.matmul(dense, weights) + biases)
+        _activation_summary(softmax)
+
+    return softmax
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.2: Construction du graphe - Loss</h3>
+                <p>Afin de pouvoir entraîner le modèle, il faut avoir une notion des erreurs faites lors de la phase d'inférence. C'est pourquoi il faut ajouter une étape avec une fonction de coût (cross-entropy).</p> 
+                <div>
+                    <div style="width:54%;display: inline-block;">
+                        <p>Elle se décompose de la manière suivante:</p>
+                    </div>
+                    <div style="width:44%;display: inline-block;">
+                        $$diff = labels * log(softmax)$$
+                        $$loss = -\frac{1}{N} \sum_{i=1}^{N} diff_i$$
+                    </div>
+                </div>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>add_loss_step</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_loss.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#log">log</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#reduce_mean">reduce_mean</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.2: Solution</h3>
+                <pre class="python"><code class="hljs">
+def add_loss_step(logits, labels):
+    """
+    Adds to the inference graph the ops required to generate loss (cross-entropy).
+
+    :param logits: Logits tensor, float - [batch_size, NUM_CLASSES].
+    :param labels: Labels tensor, int32 - [batch_size].
+    :return: loss: Loss tensor of type float.
+    """
+
+    with tf.name_scope('cross_entropy'):
+        diff = labels * tf.log(logits)
+
+        with tf.name_scope('total'):
+            cross_entropy = -tf.reduce_mean(diff)
+
+        tf.scalar_summary('cross entropy', cross_entropy)
+
+    return cross_entropy
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.3: Construction du graphe - Training</h3>
+                <p>La phase de training correspond à la mise à jour des différents poids via <b>backward propagation</b> en fonction des erreurs faites dans le forward précédent (<b>Gradient Descent</b>). Elle se décompose de la manière suivante:
+                    <ol>
+                        <li>Choix d'un optimizer (gradient descent) et d'un learning rate</li>
+                        <li>Minimisation de la loss (cross_entropy) via de ce dernier</li>
+                    </ol>
+                </p>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>add_train_step</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_train.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/train.html#GradientDescentOptimizer">GradientDescentOptimizer</a> et usage de <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/train.html#Optimizer">minimize</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.3: Solution</h3>
+                <pre class="python"><code class="hljs">
+def add_train_step(loss, learning_rate):
+    """
+    Adds to the graph the ops required to minimize the loss.
+    
+    :param loss: Loss tensor, from loss().
+    :param learning_rate: Learning Rate.
+    :return: train_op: The Op for training.
+    """
+
+    with tf.name_scope('train'):
+
+        # Optimizer
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+
+        # Use the optimizer to apply the gradients that minimize the loss (and also increment the global step counter)
+        # as a single training step.
+        train_op = optimizer.minimize(loss)
+
+    return train_op
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 3: Evaluation du modèle</h3>
+                <p>Afin de pouvoir vérifier que l'apprentissage du modèle converge, il est possible d'ajouter une <b>dernière étape d'évaluation</b> de ce dernier, que l'on pourra faire régulièrement sur un <b>validation set</b>, puis à la fin sur le <b>test set</b>.</p> 
+                <div>
+                    <div style="width:54%;display: inline-block;">
+                        <p>Cette dernière étape se décompose de la manière suivante:</p>
+                    </div>
+                    <div style="width:44%;display: inline-block;">
+                        $$correct = 1_{argmax(\tilde{y_i}) = argmax(y_i)}$$
+                        $$accuracy = \frac{1}{N} \sum_{i=1}^{N}correct_i$$
+                    </div>
+                </div>
+                <p>Dans le module <b>evaluation.py</b>, complétez la fonction <b>evaluate</b>.</p>
+                <p><i>NB: Les tests doivent passer dans <b>test_evaluation.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#argmax">argmax</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/control_flow_ops.html#equal">equal</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/array_ops.html#cast">cast</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#reduce_mean">reduce_mean</a>.</p>
+            </section>
+            <section>
+                <h3>Step 3: Solution</h3>
+                <pre class="python"><code class="hljs">
+def evaluate(logits, labels):
+    """
+    Adds an evaluation step to the graph.
+
+    :param logits: Logits tensor, from inference().
+    :param labels: True labels.
+    :return: accuracy: The Op for evaluating accuracy.
+    """
+
+    with tf.name_scope('accuracy'):
+        with tf.name_scope('correct_prediction'):
+            correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(labels, 1))
+
+        with tf.name_scope('accuracy'):
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+        tf.scalar_summary('accuracy', accuracy)
+
+    return accuracy
+                </code></pre>
+            </section>
+            <section>
+                <h3>Entraînement du modèle</h3>
+                <p>Dans le module <b>main.py</b>, complétez la fonction <b>main</b> avec les différentes fonctions que vous avez implémenté (seul l'appel à la fonction d'inférence change par rapport à l'exercice précédent).</p>
+                <p>Observez bien chaque étape de la fonction pour comprendre leur objectif, puis lancez le run.</p>
+                <p> Une fois l'entraînement terminé, lancez TensorBoard pour visualiser l'entraînement, et regardez le score atteint sur le test set.</p>
+                <p><i>NB: Une valeur classique pour le nombre de neurones dans la couches cachée pour ce réseau est 200. Libre à vous de la modifier et de voir son influence.</i></p>
+            </section>
+            <section>
+                <h3>Entraînement du modèle: Solution</h3>
+                <pre class="python"><code class="hljs">
+def main():
+
+    # Create an InteractiveSession
+    sess = tf.InteractiveSession()
+
+    # Remove tensorboard previous directory
+    if os.path.exists(FLAGS.summaries_dir):
+        shutil.rmtree(FLAGS.summaries_dir)
+
+    """
+    Step 1 - Input data management
+    """
+
+    # MNIST data
+    mnist = input.input_reader(FLAGS.data_dir)
+
+    # Input placeholders
+    x, y_ = input.input_placeholders(IMAGE_PIXELS, NUM_CLASSES)
+
+    # Reshape images for visualization
+    x_reshaped = tf.reshape(x, [-1, IMAGE_SIZE, IMAGE_SIZE, 1])
+    tf.image_summary('input', x_reshaped, NUM_CLASSES, name="y_input")
+
+    """
+    Step 2 - Building the graph
+    """
+
+    # Inference
+    softmax = graph.create_inference_step(x=x, num_pixels=IMAGE_PIXELS, num_dense=200, num_classes=NUM_CLASSES)
+
+    # Loss
+    cross_entropy = graph.add_loss_step(softmax, y_)
+
+    # Train step
+    train_step = graph.add_train_step(cross_entropy, FLAGS.learning_rate)
+
+    """
+    Step 3 - Build the evaluation step
+    """
+
+    # Model Evaluation
+    accuracy = evaluation.evaluate(softmax, y_)
+
+    """
+    Step 4 - Merge all summaries for TensorBoard generation
+    """
+
+    # Merge all the summaries and write them out to /tmp/mnist_dense_logs (by default)
+    merged = tf.merge_all_summaries()
+    train_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/train', sess.graph)
+    validation_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/validation')
+
+    """
+    Step 5 - Train the model, and write summaries
+    """
+
+    # Initialize all variables
+    tf.initialize_all_variables().run()
+
+    # All other steps, run train_step on training data, & add training summaries
+    for i in range(FLAGS.max_steps):
+
+        # Load next batch of data
+        x_batch, y_batch = mnist.train.next_batch(FLAGS.batch_size)
+
+        # Run summaries and train_step
+        summary, _ = sess.run([merged, train_step], feed_dict={x: x_batch, y_: y_batch})
+
+        # Add summaries to train writer
+        train_writer.add_summary(summary, i)
+
+        # Every 10th step, measure validation-set accuracy, and write validation summaries
+        if i % 10 == 0:
+            # Run summaries and mesure accuracy on validation set
+            summary, acc_valid = sess.run([merged, accuracy],
+                                          feed_dict={x: mnist.validation.images, y_: mnist.validation.labels})
+
+            # Add summaries to validation writer
+            validation_writer.add_summary(summary, i)
+
+            print('Validation Accuracy at step %s: %s' % (i, acc_valid))
+
+    # Measure accuracy on test set
+    acc_test = sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
+    print('Accuracy on test set: %s' % acc_test)
+                </code></pre>
+            </section>
+            <section>
+                <h3>Accuracy</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/sol_ex2_accuracy.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Cross-Entropy</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/sol_ex2_cross_entropy.png" />
+                </div>
+            </section>
+        </section>
+        <section>
+            <h2 class="alone">Exercice 3: Deep Neural Network</h2>
+            <section data-background-image="images/tensorflow-google.jpg"></section>
+            <section>
+                <h3>But de l'exercice</h3>
+                <div>
+                    <div style="width:59%;display: inline-block;">
+                        L'objectif de ce troisième exercice est d'implémenter un réseau de neurones plus complexe.
+                        <p>
+                            <li>Une couche d'entrée</li>
+                            <li>3 couches cachées</li>
+                            <li>Une couche de sortie</li>
+                            <li>Softmax</li>
+                        </p>
+                            <br />
+                    </div>
+                    <div style="width:39%;display: inline-block;">
+                        <img height="400px" src="images/nn_44322.png" />
+                    </div>
+                </div>
+                <p>Vous travaillerez dans le dossier <b>exercices/mnist_3_deep_neural_net</b></p>
+            </section>
+            <section>
+                <h3>De quoi avons-nous besoin ?</h3>
+                <div>
+                    <div style="width:74%;display: inline-block;">
+                        Les  étapes à réaliser sont toujours les mêmes:
+                        <ol>
+                            <li><b>Définir les inputs</b>: Représenter les batchs d'images sur lesquels s'entraîner, ainsi que les labels associés</li>
+                            <li>
+                                <b>Construction du graphe</b>
+                                <ol>
+                                    <li>Inférence: Toutes les étapes nécessaires pour effectuer les prédictions à partir des inputs (forward)</li>
+                                    <li>Calcul de la fonction de coût</li>
+                                    <li>Training (mise à jour par backward propagation) du modèle</li>
+                                </ol>
+                            </li>
+                            <li><b>Evaluation du modèle</b> (pour accuracy sur validation et test sets)</li>
+                        </ol>
+                    </div>
+                    <div style="width:24%;display: inline-block;">
+                        <img height="300px" src="images/nn_44322.png" />
+                        <br />
+                        <br />
+                        <br />
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h3>Disclaimer</h3>
+                <p>La quasi totalité des étapes énoncées précédemment ont <b>déjà été implémentées dans l'exercice précédent</b>.</p>
+                <p>Le seul changement se situe au niveau de la fonction d'<b>inférence</b> lors de la construction du graphe (Ajout de couches cachées), et dans le main (nouveaux paramètres pour la fonction d'inférence).</p>
+                <p><i>Pour le reste, vous pouvez donc sauvagement copier le code réalisé lors de l'étape précédente, tout en vous assurant que vous avez bien compris toutes les étapes !</i></p>
+                <p><i>Les explications de toutes les étapes ainsi que les solutions sont tout de même fournies par la suite, même si le code est le même pour certaines étapes.</i></p>
+            </section>
+            <section>
+                <h3>Step 1: Définition des inputs</h3>
+                <p>
+                    Nous allons ici <b>spécifier les entrées nécessaires au réseau de neurones</b>. Etant donné que ces entrées sont amenées à changer en fonction des images que l'on va fournir, le type de données adapté est un <b>placeholder</b>.
+                    <li>X: placeholder permettant de représenter un batch d'images (pour cet exercices, les images sont éclatées en une seule liste de pixels)</li>
+                    <li>y_: placeholder permettant de représenter le label associé à chaque image dans X</li>
+                </p>
+                <p>Dans le module <b>input.py</b>, complétez la fonction <b>input_placeholders</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_input.py</b></i></p>
+                <p>Lien vers doc <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/io_ops.html#placeholder">placeholder</a>.</p>
+            </section>
+            <section>
+                <h3>Step 1: solution</h3>
+                <pre class="python"><code class="hljs">
+def input_placeholders(image_pixels, num_classes):
+    """
+    Initialises all input placeholders needed in the graph
+
+    :param image_pixels: Total number of pixels in the image
+    :param num_classes: Number of classes to predict
+    :return: Input and labels placeholders
+    """
+
+    with tf.name_scope('input'):
+
+        # Images input
+        x = tf.placeholder(tf.float32, [None, image_pixels], name="x_input")
+
+        # Labels input
+        y_ = tf.placeholder(tf.float32, [None, num_classes])
+
+    return x, y_
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.1: Construction du graphe - Inférence</h3>
+                L'inférence correspond aux étapes nécessaires pour passer d'un input à une prédiction en traversant le réseau. Voici les étapes dans notre cas:
+                <div>
+                    <div style="width:84%;display: inline-block;">
+                        <p>
+                            <ol>
+                                <li>Définition des variables de poids (w) et biais (b) du réseau</li>
+                                <li>Opérations matricielles: $$(((x * W_1 + b_1) * W_2 + b_2) * W_3 + b_3) * W_4 + b_4$$</li>
+                                <li>Softmax sur le résultat</li>
+                            </ol>
+                        </p>
+                    </div>
+                    <div style="width:14%;display: inline-block;">
+                        <img height="175px" src="images/nn_44322.png" />
+                    </div>
+                </div>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>create_inference_step</b>.</p>
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_inference.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/state_ops.html#Variable">Variable</a>, truncated_normal, constant, relu, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#matmul">matmul</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/nn.html#softmax">softmax</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.1: Construction du graphe - Inférence</h3>
+                <h4>Hints</h4>
+                <i>Bien réfléchir aux dimensions des Tensors. Exemple:</i>
+                <div>
+                    <div style="width:64%;display: inline-block;">
+                        <p>
+                            <li>input: [batch_size, 4]</li>
+                            <li>W_1: [4, 4]; b_1: [4]</li>
+                            <li>W_2: [4, 3]; b_2: [3]</li>
+                            <li>W_3: [3, 2]; b_3: [2]</li>
+                            <li>W_4: [2, 2]; b_4: [2]</li>
+                        </p>
+                    </div>
+                    <div style="width:34%;display: inline-block;">
+                        <img height="175px" src="images/nn_44322.png" />
+                    </div>
+                </div>
+                <p><i>Initialiser les poids avec des faibles valeurs random et avec une valeur constante faible pour les biais. Pour les couches cachées, il faut faire passer la sortie (après le matmul) par une fonction sigmoid ou un relu.</i></p>
+            </section>
+            <section>
+                <h3>Step 2.1: Solution</h3>
+                <pre class="python"><code class="hljs">
+def create_inference_step(x, num_pixels, num_dense1, num_dense2, num_dense3, num_classes):
+    """
+    Build the graph as far as is required for running the network forward to make predictions.
+
+    :param x: Images placeholder, from inputs().
+    :param num_pixels: Number of pixels in the original image
+    :param num_dense1: Number of neurons in the first hidden layer
+    :param num_dense2: Number of neurons in the second hidden layer
+    :param num_dense3: Number of neurons in the third hidden layer
+    :param num_classes: Number of classes to predict
+    :return: softmax: Output tensor with the computed logits.
+    """
+
+    # First Hidden Layer
+    with tf.name_scope("dense1"):
+        weights = tf.Variable(tf.truncated_normal(shape=[num_pixels, num_dense1], stddev=0.1, name="weights"))
+        biases = tf.Variable(tf.constant(0.1, shape=[num_dense1], name="biases"))
+
+        dense1 = tf.nn.relu(tf.matmul(x, weights) + biases, name="dense1")
+        _activation_summary(dense1)
+
+    # Second Hidden Layer
+    with tf.name_scope("dense2"):
+        weights = tf.Variable(tf.truncated_normal(shape=[num_dense1, num_dense2], stddev=0.1, name="weights"))
+        biases = tf.Variable(tf.constant(0.1, shape=[num_dense2], name="biases"))
+
+        dense2 = tf.nn.relu(tf.matmul(dense1, weights) + biases, name="dense1")
+        _activation_summary(dense2)
+
+    # Third Hidden Layer
+    with tf.name_scope("dense3"):
+        weights = tf.Variable(tf.truncated_normal(shape=[num_dense2, num_dense3], stddev=0.1, name="weights"))
+        biases = tf.Variable(tf.constant(0.1, shape=[num_dense3], name="biases"))
+
+        dense3 = tf.nn.relu(tf.matmul(dense2, weights) + biases, name="dense1")
+        _activation_summary(dense3)
+
+    # Softmax Layer
+    with tf.name_scope("softmax"):
+        weights = tf.Variable(tf.truncated_normal(shape=[num_dense3, num_classes], stddev=0.1, name="weights"))
+        biases = tf.Variable(tf.constant(0.1, shape=[num_classes], name="biases"))
+
+        softmax = tf.nn.softmax(tf.matmul(dense3, weights) + biases)
+        _activation_summary(softmax)
+
+    return softmax
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.2: Construction du graphe - Loss</h3>
+                <p>Afin de pouvoir entraîner le modèle, il faut avoir une notion des erreurs faites lors de la phase d'inférence. C'est pourquoi il faut ajouter une étape avec une fonction de coût (cross-entropy).</p> 
+                <div>
+                    <div style="width:54%;display: inline-block;">
+                        <p>Elle se décompose de la manière suivante:</p>
+                    </div>
+                    <div style="width:44%;display: inline-block;">
+                        $$diff = labels * log(softmax)$$
+                        $$loss = -\frac{1}{N} \sum_{i=1}^{N} diff_i$$
+                    </div>
+                </div>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>add_loss_step</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_loss.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#log">log</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#reduce_mean">reduce_mean</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.2: Solution</h3>
+                <pre class="python"><code class="hljs">
+def add_loss_step(logits, labels):
+    """
+    Adds to the inference graph the ops required to generate loss (cross-entropy).
+
+    :param logits: Logits tensor, float - [batch_size, NUM_CLASSES].
+    :param labels: Labels tensor, int32 - [batch_size].
+    :return: loss: Loss tensor of type float.
+    """
+
+    with tf.name_scope('cross_entropy'):
+        diff = labels * tf.log(logits)
+
+        with tf.name_scope('total'):
+            cross_entropy = -tf.reduce_mean(diff)
+
+        tf.scalar_summary('cross entropy', cross_entropy)
+
+    return cross_entropy
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 2.3: Construction du graphe - Training</h3>
+                <p>La phase de training correspond à la mise à jour des différents poids via <b>backward propagation</b> en fonction des erreurs faites dans le forward précédent (<b>Gradient Descent</b>). Elle se décompose de la manière suivante:
+                    <ol>
+                        <li>Choix d'un optimizer (gradient descent) et d'un learning rate</li>
+                        <li>Minimisation de la loss (cross_entropy) via de ce dernier</li>
+                    </ol>
+                </p>
+                <p>Dans le module <b>graph.py</b>, complétez la fonction <b>add_train_step</b>.</p> 
+                <p><i>NB: Les tests doivent passer dans <b>test_graph_train.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/train.html#GradientDescentOptimizer">GradientDescentOptimizer</a> et usage de <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/train.html#Optimizer">minimize</a>.</p>
+            </section>
+            <section>
+                <h3>Step 2.3: Solution</h3>
+                <pre class="python"><code class="hljs">
+def add_train_step(loss, learning_rate):
+    """
+    Adds to the graph the ops required to minimize the loss.
+    
+    :param loss: Loss tensor, from loss().
+    :param learning_rate: Learning Rate.
+    :return: train_op: The Op for training.
+    """
+
+    with tf.name_scope('train'):
+
+        # Optimizer
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+
+        # Use the optimizer to apply the gradients that minimize the loss (and also increment the global step counter)
+        # as a single training step.
+        train_op = optimizer.minimize(loss)
+
+    return train_op
+                </code></pre>
+            </section>
+            <section>
+                <h3>Step 3: Evaluation du modèle</h3>
+                <p>Afin de pouvoir vérifier que l'apprentissage du modèle converge, il est possible d'ajouter une <b>dernière étape d'évaluation</b> de ce dernier, que l'on pourra faire régulièrement sur un <b>validation set</b>, puis à la fin sur le <b>test set</b>.</p> 
+                <div>
+                    <div style="width:54%;display: inline-block;">
+                        <p>Cette dernière étape se décompose de la manière suivante:</p>
+                    </div>
+                    <div style="width:44%;display: inline-block;">
+                        $$correct = 1_{argmax(\tilde{y_i}) = argmax(y_i)}$$
+                        $$accuracy = \frac{1}{N} \sum_{i=1}^{N}correct_i$$
+                    </div>
+                </div>
+                <p>Dans le module <b>evaluation.py</b>, complétez la fonction <b>evaluate</b>.</p>
+                <p><i>NB: Les tests doivent passer dans <b>test_evaluation.py</b></i></p>
+                <p>Lien vers docs <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#argmax">argmax</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/control_flow_ops.html#equal">equal</a>, <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/array_ops.html#cast">cast</a> et <a href = "https://www.tensorflow.org/versions/r0.10/api_docs/python/math_ops.html#reduce_mean">reduce_mean</a>.</p>
+            </section>
+            <section>
+                <h3>Step 3: Solution</h3>
+                <pre class="python"><code class="hljs">
+def evaluate(logits, labels):
+    """
+    Adds an evaluation step to the graph.
+
+    :param logits: Logits tensor, from inference().
+    :param labels: True labels.
+    :return: accuracy: The Op for evaluating accuracy.
+    """
+
+    with tf.name_scope('accuracy'):
+        with tf.name_scope('correct_prediction'):
+            correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(labels, 1))
+
+        with tf.name_scope('accuracy'):
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+        tf.scalar_summary('accuracy', accuracy)
+
+    return accuracy
+                </code></pre>
+            </section>
+            <section>
+                <h3>Entraînement du modèle</h3>
+                <p>Dans le module <b>main.py</b>, complétez la fonction <b>main</b> avec les différentes fonctions que vous avez implémenté (seul l'appel à la fonction d'inférence change par rapport à l'exercice précédent).</p>
+                <p>Observez bien chaque étape de la fonction pour comprendre leur objectif, puis lancez le run.</p>
+                <p> Une fois l'entraînement terminé, lancez TensorBoard pour visualiser l'entraînement, et regardez le score atteint sur le test set.</p>
+                <p><i>NB: Des valeurs classiques pour le nombre de neurones dans les couches cachées pour ce réseau sont 200, 100, 50. Libre à vous de les modifier et de voir leur influence.</i></p>
+            </section>
+            <section>
+                <h3>Entraînement du modèle: Solution</h3>
+                <pre class="python"><code class="hljs">
+def main():
+
+    # Create an InteractiveSession
+    sess = tf.InteractiveSession()
+
+    # Remove tensorboard previous directory
+    if os.path.exists(FLAGS.summaries_dir):
+        shutil.rmtree(FLAGS.summaries_dir)
+
+    """
+    Step 1 - Input data management
+    """
+
+    # MNIST data
+    mnist = input.input_reader(FLAGS.data_dir)
+
+    # Input placeholders
+    x, y_ = input.input_placeholders(IMAGE_PIXELS, NUM_CLASSES)
+
+    # Reshape images for visualization
+    x_reshaped = tf.reshape(x, [-1, IMAGE_SIZE, IMAGE_SIZE, 1])
+    tf.image_summary('input', x_reshaped, NUM_CLASSES, name="y_input")
+
+    """
+    Step 2 - Building the graph
+    """
+
+    # Inference
+    softmax = graph.create_inference_step(x=x, num_pixels=IMAGE_PIXELS, num_dense1=200, num_dense2=100, num_dense3=50,
+                                          num_classes=NUM_CLASSES)
+
+    # Loss
+    cross_entropy = graph.add_loss_step(softmax, y_)
+
+    # Train step
+    train_step = graph.add_train_step(cross_entropy, FLAGS.learning_rate)
+
+    """
+    Step 3 - Build the evaluation step
+    """
+
+    # Model Evaluation
+    accuracy = evaluation.evaluate(softmax, y_)
+
+    """
+    Step 4 - Merge all summaries for TensorBoard generation
+    """
+
+    # Merge all the summaries and write them out to /tmp/mnist_dense_logs (by default)
+    merged = tf.merge_all_summaries()
+    train_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/train', sess.graph)
+    validation_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/validation')
+
+    """
+    Step 5 - Train the model, and write summaries
+    """
+
+    # Initialize all variables
+    tf.initialize_all_variables().run()
+
+    # All other steps, run train_step on training data, & add training summaries
+    for i in range(FLAGS.max_steps):
+
+        # Load next batch of data
+        x_batch, y_batch = mnist.train.next_batch(FLAGS.batch_size)
+
+        # Run summaries and train_step
+        summary, _ = sess.run([merged, train_step], feed_dict={x: x_batch, y_: y_batch})
+
+        # Add summaries to train writer
+        train_writer.add_summary(summary, i)
+
+        # Every 10th step, measure validation-set accuracy, and write validation summaries
+        if i % 10 == 0:
+            # Run summaries and mesure accuracy on validation set
+            summary, acc_valid = sess.run([merged, accuracy],
+                                          feed_dict={x: mnist.validation.images, y_: mnist.validation.labels})
+
+            # Add summaries to validation writer
+            validation_writer.add_summary(summary, i)
+
+            print('Validation Accuracy at step %s: %s' % (i, acc_valid))
+
+    # Measure accuracy on test set
+    acc_test = sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
+    print('Accuracy on test set: %s' % acc_test)
+                </code></pre>
+            </section>
+            <section>
+                <h3>Accuracy</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/sol_ex3_accuracy.png" />
+                </div>
+            </section>
+            <section>
+                <h3>Cross-Entropy</h3>
+                <div class="center">
+                    <img width="800px" height="475px" src="images/sol_ex3_cross_entropy.png" />
+                </div>
+            </section>
+        </section>
+        <section>
+            <h2 class="alone">Pour aller plus loin</h2>
+            <section data-background-image="images/tensorflow-google.jpg"></section>
+            <section>
+                <h3>Next steps</h3>
+                <li>Learning Rate Decay</li>
+                <li>Dropout</li>
+                <li>Images: <b><a href = "https://en.wikipedia.org/wiki/Convolutional_neural_network">Convolutional Neural Networks</a></b></li>
+                <li>Texte / Speech: <b><a href = "https://en.wikipedia.org/wiki/Recurrent_neural_network">Recurrent Neural Networks</a></b></li>
+                <li>Transfer Learning</li>
+                <li><i>Et plein d'autres...</i></li>
+                <p>TODO: Comparer avec valeurs Martin</p>
+            </section>
+            <section>
+                <h3>TensorFlow, what else ?</h3>
+                <p><b><a href = "http://deeplearning.net/software/theano/">Theano</a></b>: Pour tout coder à la main</p>
+                <p><b><a href = "https://keras.io/">Keras</a></b>: API plus haut niveau, basée sur TensorFlow ou Theano</p>
+                <p><b><a href = "http://torch.ch/">Torch</a></b>: Utilisé par facebook</p>
+                <p><b><a href = "http://caffe.berkeleyvision.org/">Caffe</a></b>: APIs en Python et C++</p>
+                <p><b><a href = "https://github.com/tensorflow/skflow">skflow</a></b>: Interface simplifiée à TensorFLow, similaire à scikit-learn</p>
+                <p><b><a href = "https://github.com/tensorflow/skflow">TensorFrames</a></b>: Wrapper TensorFlow pour les DataFrames de Spark</p>
+            </section>
+        </section>
+        <section class="back-page" data-background-image="images/tensorflow-lead.jpg">
+            <h1>Merci</h1>
+            Sources du projet : <a href = "https://github.com/ybenoit/hands-on-tensorflow">https://github.com/ybenoit/hands-on-tensorflow</a>
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+        </section>
+    </div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+
+    // Full list of configuration options available at:
+    // https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        backgroundTransition:'slide',
+        transition: 'slide', // none/fade/slide/convex/concave/zoom,
+
+        math: {
+            mathjax: 'http://cdn.mathjax.org/mathjax/latest/MathJax.js',
+            config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+        },
+
+        // Optional reveal.js plugins
+        dependencies: [
+            { src: 'plugin/math/math.js', async: true },
+            {
+                src: 'lib/js/classList.js', condition: function () {
+                return !document.body.classList;
+            }
+            },
+            {
+                src: 'plugin/markdown/marked.js', condition: function () {
+                return !!document.querySelector('[data-markdown]');
+            }
+            },
+            {
+                src: 'plugin/markdown/markdown.js', condition: function () {
+                return !!document.querySelector('[data-markdown]');
+            }
+            },
+            {
+                src: 'plugin/highlight/highlight.js', async: true, condition: function () {
+                return !!document.querySelector('pre code');
+            }, callback: function () {
+                hljs.initHighlightingOnLoad();
+            }
+            },
+            {src: 'plugin/zoom-js/zoom.js', async: true},
+            {src: 'plugin/notes/notes.js', async: true}
+        ]
+    });
+
+    Reveal.addEventListener('slidechanged', function (event) {
+        if (event.indexh == 0) {
+            document.querySelector('.reveal').classList.add('slide0');
+        } else {
+            document.querySelector('.reveal').classList.remove('slide0');
+        }
+
+    });
+
+
+    if (Reveal.getState().indexh == 0) {
+        document.querySelector('.reveal').classList.add('slide0');
+    }
+
+</script>
+
+</body>
+</html>
