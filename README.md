@@ -1,5 +1,5 @@
 # Hands' On TensorFlow
-Introduction to TensorFlow
+Introduction to Neural Networks and TensorFlow with guided exercises.
 
 ## Setup
 
@@ -32,12 +32,21 @@ git clone https://github.com/ybenoit/hands-on-tensorflow.git
 cd hands-on-tensorflow
 ```
 
+### Run tests
+```
+cd hands-on-tensorflow
+py.test hands_on_tensorflow/solutions/mnist_1_softmax_regression/tests/
+```
+
 ### Configure your IDE
-TODO
+To be able to work with TensorFlow in an IDE like PyCharm, you must specify the Python Interpreter corresponding to your TensorFlow conda environment.
+* Open PyCharm
+* PyCharm -> Preferences -> Project Interpreter
+* Select the interpreter corresponding to your TensorFlow anaconda environment (Ex: ~/anaconda/envs/tensorflow/bin/python)
 
 ## Start Working
 The project is organized as follow:
 * The tutorials/exercices module is your working module
 * The tutorials/solutions module contains the solutions of the exercices
 
-To complete the exercices, follow the instructions in the presentation.
+To complete the exercices, follow the instructions in the presentation (prez directory).
